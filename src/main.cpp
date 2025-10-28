@@ -10,7 +10,7 @@ pros::MotorGroup leftMotors({-9, 19},
 pros::MotorGroup rightMotors({16, 15}, pros::MotorGearset::green); // right motor group - ports 6, 7, 9 (reversed)
 
 // Inertial Sensor on port 10
-pros::Imu imu(10);
+pros::Imu imu(3);
 
 // tracking wheels
 // horizontal tracking wheel encoder. Rotation sensor, port 20, not reversed
@@ -169,6 +169,14 @@ void opcontrol() {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
+            //motors 10, 11, 12, 13 = F, F, R, R
+        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
+            //motors 10, 11, 12, 13 = R, R, F, F
+        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)){
+         //motors 10, 11, 12, 13 = R, R, F R
+         }
+   
         // move the chassis with curvature drive
         chassis.arcade(leftY, rightX);
         // delay to save resources
