@@ -7,7 +7,10 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 // motor groups
 pros::MotorGroup leftMotors({-9, 19},
                             pros::MotorGearset::green); // left motor group - ports 3 (reversed), 4, 5 (reversed)
-pros::MotorGroup rightMotors({16, 15}, pros::MotorGearset::green); // right motor group - ports 6, 7, 9 (reversed)
+    pros::MotorGroup rightMotors({16, 15}, pros::MotorGearset::green); // right motor group - ports 6, 7, 9 (reversed)
+    pros::MotorGroup ChannelMotors({10, -11}, pros::MotorGearset::blue); // motors for channel - ports 10, 11 
+    pros::Motor topchanelmotor(20, pros::MotorGearset::blue); // motors for channel - ports 20 
+    pros::Motor middleMotor(12, pros::MotorGearset::blue); // motors for channel - port 12 
 
 // Inertial Sensor on port 10
 pros::Imu imu(3);
@@ -170,12 +173,25 @@ void opcontrol() {
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
-            //motors 10, 11, 12, 13 = F, F, R, R
+            //motors 10, 11, 12, 20 = R, R, R, R
+            middleMotor.move(120);
+            ChannelMotors.move(120);
+            topchanelmotor.move(120);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-            //motors 10, 11, 12, 13 = R, R, F, F
+            //motors 10, 11, 12, 20 = F, F, F, F
+          ChannelMotors.move(-100);
+          middleMotor.move(-100);
+          topchanelmotor.move(-100);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)){
-         //motors 10, 11, 12, 13 = R, R, F R
-         }
+         //motors 10, 11, 12, 20 = R, R, F, R
+         topchanelmotor.move(-120);
+         middleMotor.move(-120);
+         ChannelMotors.move(120);
+        } else {
+            // stop all motors
+            middleMotor.move(0);
+            ChannelMotors.move(0);
+        }
    
         // move the chassis with curvature drive
         chassis.arcade(leftY, rightX);
