@@ -173,24 +173,30 @@ void opcontrol() {
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
-            //motors 10, 11, 12, 20 = R, R, R, R
+            //motors 10, 11, 12, 20 = R, R, R, R goes out and into the side tubes.
             middleMotor.move(120);
             ChannelMotors.move(120);
             topchanelmotor.move(120);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-            //motors 10, 11, 12, 20 = F, F, F, F
+            //motors 10, 11, 12, 20 = F, F, F, F. goes out of the robot by going down
           ChannelMotors.move(-100);
           middleMotor.move(-100);
           topchanelmotor.move(-100);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)){
-         //motors 10, 11, 12, 20 = R, R, F, R
+         //motors 10, 11, 12, 20 = F, R, R. goes up then into the central tube
          topchanelmotor.move(-120);
          middleMotor.move(-120);
          ChannelMotors.move(120);
+        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)){
+         //motors 10, 11, 12, 20 = F,F,R. Goes up the into the back container 
+         topchanelmotor.move(-120);
+         middleMotor.move(120);
+         ChannelMotors.move(120);
         } else {
-            // stop all motors
+            // stops all motors when no buttons are pressed.
             middleMotor.move(0);
             ChannelMotors.move(0);
+            topchanelmotor.move(0);
         }
    
         // move the chassis with curvature drive
