@@ -5,12 +5,12 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // motor groups
-pros::MotorGroup leftMotors({-9, 19},
+pros::MotorGroup leftMotors({9, 8},
                             pros::MotorGearset::green); // left motor group - ports 3 (reversed), 4, 5 (reversed)
     pros::MotorGroup rightMotors({16, 15}, pros::MotorGearset::green); // right motor group - ports 6, 7, 9 (reversed)
-    pros::MotorGroup ChannelMotors({10, -11}, pros::MotorGearset::blue); // motors for channel - ports 10, 11 
-    pros::Motor topchanelmotor(20, pros::MotorGearset::blue); // motors for channel - ports 20 
-    pros::Motor middleMotor(12, pros::MotorGearset::blue); // motors for channel - port 12 
+    pros::MotorGroup ChannelMotors({-10, 20}, pros::MotorGearset::blue); // motors for channel - ports 10, 11 
+    pros::Motor topchanelmotor(12, pros::MotorGearset::blue); // motors for channel - ports 20 
+    pros::Motor middleMotor(11, pros::MotorGearset::blue); // motors for channel - port 12 
 
 // Inertial Sensor on port 10
 pros::Imu imu(3);
@@ -134,32 +134,7 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    // Move to x: 20 and y: 15, and face heading 90. Timeout set to 4000 ms
-    chassis.moveToPoint(10, 30, 4000);
-    // Move to x: 0 and y: 0 and face heading 270, going backwards. Timeout set to 4000ms
-    chassis.moveToPose(0, 0, 270, 4000, {.forwards = false});
-    // cancel the movement after it has traveled 10 inches
-    chassis.waitUntil(10);
-    chassis.cancelMotion();
-    // Turn to face the point x:45, y:-45. Timeout set to 1000
-    // dont turn faster than 60 (out of a maximum of 127)
-    chassis.turnToPoint(45, -45, 1000, {.maxSpeed = 60});
-    // Turn to face a direction of 90º. Timeout set to 1000
-    // will always be faster than 100 (out of a maximum of 127)
-    // also force it to turn clockwise, the long way around
-    chassis.turnToHeading(90, 1000, {.direction = AngularDirection::CW_CLOCKWISE, .minSpeed = 100});
-    // Follow the path in path.txt. Lookahead at 15, Timeout set to 4000
-    // following the path with the back of the robot (forwards = false)
-    // see line 116 to see how to define a path
-    chassis.follow(example_txt, 15, 4000, false);
-    // wait until the chassis has traveled 10 inches. Otherwise the code directly after
-    // the movement will run immediately
-    // Unless its another movement, in which case it will wait
-    chassis.waitUntil(10);
-    pros::lcd::print(4, "Traveled 10 inches during pure pursuit!");
-    // wait until the movement is done
-    chassis.waitUntilDone();
-    pros::lcd::print(4, "pure pursuit finished!");
+    
 }
 
 /**
@@ -174,22 +149,22 @@ void opcontrol() {
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
             //motors 10, 11, 12, 20 = R, R, R, R goes out and into the side tubes.
-            middleMotor.move(120);
+            middleMotor.move(-120);
             ChannelMotors.move(120);
             topchanelmotor.move(120);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
             //motors 10, 11, 12, 20 = F, F, F, F. goes out of the robot by going down
-          ChannelMotors.move(-100);
+          ChannelMotors.move(100);
           middleMotor.move(-100);
           topchanelmotor.move(-100);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)){
          //motors 10, 11, 12, 20 = F, R, R. goes up then into the central tube
-         topchanelmotor.move(-120);
+         topchanelmotor.move(120);
          middleMotor.move(-120);
          ChannelMotors.move(120);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)){
          //motors 10, 11, 12, 20 = F,F,R. Goes up the into the back container 
-         topchanelmotor.move(-120);
+         topchanelmotor.move(120);
          middleMotor.move(120);
          ChannelMotors.move(120);
         } else {
@@ -200,8 +175,8 @@ void opcontrol() {
         }
    
         // move the chassis with curvature drive
-        chassis.arcade(leftY, rightX);
+        chassis.arcade(ANALOG_LEFT_X, ANALOG_RIGHT_Y);
         // delay to save resources
-        pros::delay(10);
+        pros::delay(5);
     }
 }
