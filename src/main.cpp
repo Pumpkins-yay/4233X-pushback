@@ -5,12 +5,14 @@
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // motor groups
-pros::MotorGroup leftMotors({9, 8},
+pros::MotorGroup leftMotors({-9, -8},
                             pros::MotorGearset::green); // left motor group - ports 3 (reversed), 4, 5 (reversed)
-    pros::MotorGroup rightMotors({16, 15}, pros::MotorGearset::green); // right motor group - ports 6, 7, 9 (reversed)
-    pros::MotorGroup ChannelMotors({-10, 20}, pros::MotorGearset::blue); // motors for channel - ports 10, 11 
-    pros::Motor topchanelmotor(12, pros::MotorGearset::blue); // motors for channel - ports 20 
-    pros::Motor middleMotor(11, pros::MotorGearset::blue); // motors for channel - port 12 
+pros::MotorGroup rightMotors({16, 15}, pros::MotorGearset::green); // right motor group - ports 6, 7, 9 (reversed)
+pros::MotorGroup ChannelMotors({-10, 20}, pros::MotorGearset::blue); // motors for channel - ports 10, 11 
+pros::Motor topchanelmotor(-12, pros::MotorGearset::blue); // motors for channel - ports 20 
+pros::Motor middleMotor(11, pros::MotorGearset::blue); // motors for channel - port 12
+
+pros::ADIAnalogOut doinker= pros::ADIAnalogOut('A');
 
 // Inertial Sensor on port 10
 pros::Imu imu(3);
@@ -134,7 +136,16 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    
+    // Back up untill robot has 3 wheels hanging out of park zone
+    leftMotors.move(100);
+    rightMotors.move(100);
+    ChannelMotors.move(80);
+    middleMotor.move(20);
+    pros::delay(3000);
+    //drive fowards into the park zone to park
+    leftMotors.move(-100);
+    rightMotors.move(-100);
+    pros::delay(1500);
 }
 
 /**
@@ -146,27 +157,31 @@ void opcontrol() {
     while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
+        int leftX = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
+        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)){
             //motors 10, 11, 12, 20 = R, R, R, R goes out and into the side tubes.
-            middleMotor.move(-120);
-            ChannelMotors.move(120);
-            topchanelmotor.move(120);
-        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
+            middleMotor.move(60);
+            ChannelMotors.move(50);
+            topchanelmotor.move(100);
+            } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
             //motors 10, 11, 12, 20 = F, F, F, F. goes out of the robot by going down
-          ChannelMotors.move(100);
-          middleMotor.move(-100);
+          ChannelMotors.move(-50);
+          middleMotor.move(-60);
           topchanelmotor.move(-100);
-        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)){
+        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
          //motors 10, 11, 12, 20 = F, R, R. goes up then into the central tube
-         topchanelmotor.move(120);
-         middleMotor.move(-120);
-         ChannelMotors.move(120);
-        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)){
+         topchanelmotor.move(100);
+         middleMotor.move(-60);
+         ChannelMotors.move(50);
+        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)){
          //motors 10, 11, 12, 20 = F,F,R. Goes up the into the back container 
-         topchanelmotor.move(120);
-         middleMotor.move(120);
-         ChannelMotors.move(120);
+         topchanelmotor.move(-100);
+         middleMotor.move(60);
+         ChannelMotors.move(50);
+         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            doinker.set_value(false);
+         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
+            doinker.set_value(true);
         } else {
             // stops all motors when no buttons are pressed.
             middleMotor.move(0);
@@ -175,7 +190,7 @@ void opcontrol() {
         }
    
         // move the chassis with curvature drive
-        chassis.arcade(ANALOG_LEFT_X, ANALOG_RIGHT_Y);
+        chassis.arcade(leftY, leftX);
         // delay to save resources
         pros::delay(5);
     }
