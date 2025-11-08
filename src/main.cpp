@@ -12,7 +12,7 @@ pros::MotorGroup ChannelMotors({-10, 20}, pros::MotorGearset::blue); // motors f
 pros::Motor topchanelmotor(-12, pros::MotorGearset::blue); // motors for channel - ports 20 
 pros::Motor middleMotor(11, pros::MotorGearset::blue); // motors for channel - port 12
 
-pros::ADIAnalogOut doinker= pros::ADIAnalogOut('A');
+pros::ADIDigitalOut doinker('A');
 
 // Inertial Sensor on port 10
 pros::Imu imu(3);
@@ -139,13 +139,22 @@ void autonomous() {
     // Back up untill robot has 3 wheels hanging out of park zone
     leftMotors.move(100);
     rightMotors.move(100);
-    ChannelMotors.move(80);
-    middleMotor.move(20);
-    pros::delay(3000);
+    ChannelMotors.move(40);
+    middleMotor.move(30);
+    pros::delay(1700);
+
     //drive fowards into the park zone to park
-    leftMotors.move(-100);
-    rightMotors.move(-100);
-    pros::delay(1500);
+    leftMotors.move(-80);
+    rightMotors.move(80);
+    pros::delay(450);
+
+    leftMotors.move(80);
+    rightMotors.move(80);
+    pros::delay(500);
+
+    ChannelMotors.move(-80);
+    middleMotor.move(-100);
+    topchanelmotor.move(-100);
 }
 
 /**
@@ -154,6 +163,7 @@ void autonomous() {
 void opcontrol() {
     // controller
     // loop to continuously update motors
+    bool pneumatic_state = false;
     while (true) {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -165,7 +175,7 @@ void opcontrol() {
             topchanelmotor.move(100);
             } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)){
             //motors 10, 11, 12, 20 = F, F, F, F. goes out of the robot by going down
-          ChannelMotors.move(-50);
+          ChannelMotors.move(-90);
           middleMotor.move(-60);
           topchanelmotor.move(-100);
         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)){
@@ -178,17 +188,17 @@ void opcontrol() {
          topchanelmotor.move(-100);
          middleMotor.move(60);
          ChannelMotors.move(50);
-         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
-            doinker.set_value(false);
-         } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
-            doinker.set_value(true);
-        } else {
+         } 
+         else {
             // stops all motors when no buttons are pressed.
             middleMotor.move(0);
             ChannelMotors.move(0);
             topchanelmotor.move(0);
         }
-   
+        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
+            pneumatic_state = !pneumatic_state;
+            doinker.set_value(pneumatic_state);
+        } 
         // move the chassis with curvature drive
         chassis.arcade(leftY, leftX);
         // delay to save resources
